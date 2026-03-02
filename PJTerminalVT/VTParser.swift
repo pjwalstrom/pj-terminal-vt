@@ -278,9 +278,8 @@ final class VTParser {
         case GHOSTTY_SGR_ATTR_BRIGHT_FG_8:
             buffer.currentAttrs.fg = namedColor(Int(value.bright_fg_8) + 8, bold: false)
         case GHOSTTY_SGR_ATTR_DIRECT_COLOR_FG:
-            var r: UInt8 = 0, g: UInt8 = 0, b: UInt8 = 0
-            ghostty_color_rgb_get(value.direct_color_fg, &r, &g, &b)
-            buffer.currentAttrs.fg = NSColor(red: CGFloat(r)/255, green: CGFloat(g)/255, blue: CGFloat(b)/255, alpha: 1)
+            let c = value.direct_color_fg
+            buffer.currentAttrs.fg = NSColor(red: CGFloat(c.r)/255, green: CGFloat(c.g)/255, blue: CGFloat(c.b)/255, alpha: 1)
         case GHOSTTY_SGR_ATTR_FG_256:
             buffer.currentAttrs.fg = color256(Int(value.fg_256))
         case GHOSTTY_SGR_ATTR_RESET_FG:
@@ -291,9 +290,8 @@ final class VTParser {
         case GHOSTTY_SGR_ATTR_BRIGHT_BG_8:
             buffer.currentAttrs.bg = namedColor(Int(value.bright_bg_8) + 8, bold: false)
         case GHOSTTY_SGR_ATTR_DIRECT_COLOR_BG:
-            var r: UInt8 = 0, g: UInt8 = 0, b: UInt8 = 0
-            ghostty_color_rgb_get(value.direct_color_bg, &r, &g, &b)
-            buffer.currentAttrs.bg = NSColor(red: CGFloat(r)/255, green: CGFloat(g)/255, blue: CGFloat(b)/255, alpha: 1)
+            let c = value.direct_color_bg
+            buffer.currentAttrs.bg = NSColor(red: CGFloat(c.r)/255, green: CGFloat(c.g)/255, blue: CGFloat(c.b)/255, alpha: 1)
         case GHOSTTY_SGR_ATTR_BG_256:
             buffer.currentAttrs.bg = color256(Int(value.bg_256))
         case GHOSTTY_SGR_ATTR_RESET_BG:

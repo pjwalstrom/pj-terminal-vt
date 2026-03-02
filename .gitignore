@@ -1,0 +1,17 @@
+# Xcode
+*.xcodeproj/
+!*.xcodeproj/project.pbxproj
+xcuserdata/
+*.xcworkspace/
+DerivedData/
+
+# Build artifacts
+lib/libghostty-vt.dylib
+lib/include/
+
+# macOS
+.DS_Store
+
+# Vendor
+vendor/ghostty/.zig-cache/
+vendor/ghostty/zig-out/

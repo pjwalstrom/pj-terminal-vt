@@ -1,0 +1,52 @@
+name: PJTerminalVT
+options:
+  bundleIdPrefix: com.pjw
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+  defaultConfig: Debug
+
+settings:
+  base:
+    SWIFT_VERSION: "5"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+
+targets:
+  PJTerminalVT:
+    type: application
+    platform: macOS
+    sources:
+      - path: PJTerminalVT
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pjw.pj-terminal-vt
+        PRODUCT_NAME: PJTerminalVT
+        INFOPLIST_FILE: PJTerminalVT/Info.plist
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_OBJC_BRIDGING_HEADER: ""
+        SWIFT_INCLUDE_PATHS:
+          - "$(PROJECT_DIR)/lib/include"
+        HEADER_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/lib/include"
+        LIBRARY_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/lib"
+        LD_RUNPATH_SEARCH_PATHS:
+          - "@executable_path/../Frameworks"
+          - "@executable_path"
+        OTHER_LDFLAGS:
+          - "-lghostty-vt"
+        ENABLE_HARDENED_RUNTIME: false
+        CODE_SIGN_IDENTITY: "-"
+        SWIFT_STRICT_CONCURRENCY: "minimal"
+    entitlements:
+      path: PJTerminalVT/PJTerminalVT.entitlements
+    postBuildScripts:
+      - name: "Copy dylib"
+        script: |
+          mkdir -p "${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}"
+          cp "${PROJECT_DIR}/lib/libghostty-vt.dylib" "${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/"
+        basedOnDependencyAnalysis: false

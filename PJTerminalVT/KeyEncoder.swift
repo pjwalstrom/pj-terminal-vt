@@ -17,24 +17,37 @@ final class KeyEncoder {
     /// Encode an NSEvent into bytes to send to the PTY.
     /// Returns nil if the event can't be encoded.
     func encode(_ event: NSEvent, action: GhosttyKeyAction = GHOSTTY_KEY_ACTION_PRESS) -> Data? {
-        guard let encoder else { return plainEncode(event) }
+        // For regular printable characters without control/command modifiers,
+        // send characters directly — the ghostty encoder is meant for special
+        // keys and kitty keyboard protocol, not basic text input.
+        let significantMods = event.modifierFlags.intersection([.control, .command])
+        if significantMods.isEmpty, let chars = event.characters, !chars.isEmpty,
+           let first = chars.unicodeScalars.first, first.value >= 0x20 && first.value != 0x7F {
+            return chars.data(using: .utf8)
+        }
+
+        // For special keys and modified keys, try ghostty encoder then fallback
+        if let data = ghosttyEncode(event, action: action) {
+            return data
+        }
+        return plainEncode(event)
+    }
+
+    /// Try encoding via the ghostty key encoder (useful for special keys).
+    private func ghosttyEncode(_ event: NSEvent, action: GhosttyKeyAction) -> Data? {
+        guard let encoder else { return nil }
 
         var keyEvent: GhosttyKeyEvent?
         guard ghostty_key_event_new(nil, &keyEvent) == GHOSTTY_SUCCESS,
-              let ke = keyEvent else { return plainEncode(event) }
+              let ke = keyEvent else { return nil }
         defer { ghostty_key_event_free(ke) }
+
+        guard let ghosttyKey = mapKeyCode(event.keyCode) else { return nil }
 
         ghostty_key_event_set_action(ke, action)
         ghostty_key_event_set_mods(ke, modsFromEvent(event))
+        ghostty_key_event_set_key(ke, ghosttyKey)
 
-        if let ghosttyKey = mapKeyCode(event.keyCode) {
-            ghostty_key_event_set_key(ke, ghosttyKey)
-        } else {
-            ghostty_key_event_free(ke)
-            return plainEncode(event)
-        }
-
-        // Set UTF-8 text for printable characters
         if let chars = event.characters, !chars.isEmpty {
             let utf8 = Array(chars.utf8)
             utf8.withUnsafeBufferPointer { buf in
@@ -49,7 +62,7 @@ final class KeyEncoder {
         if result == GHOSTTY_SUCCESS && written > 0 {
             return Data(bytes: buf, count: written)
         }
-        return plainEncode(event)
+        return nil
     }
 
     /// Simple fallback: just send the characters as UTF-8.
